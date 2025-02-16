@@ -8,10 +8,10 @@ exact_data = []
 over_data = []
 merge_data = []
 
-for i in range (4, 7):
+for i in range (1, 57):
     print(i)
     temp = []
-    with open(f"../data/experiment 1/voronoi_loss_K3_15000_100000_40_{i}.json", "r") as file:
+    with open(f"../data/experiment 1/voronoi_loss_K3_1000_100000_40_{i}.json", "r") as file:
         temp = (json.load(file))
 
     temp_exact = np.array(temp["exact"])
@@ -44,10 +44,19 @@ from sklearn.linear_model import LinearRegression
 reg = LinearRegression().fit(x, y)
 print(reg.coef_)
 print(reg.intercept_)
-plt.plot(sample_list, average_merge, label="Merge")
+label = "$\mathcal{D}_2(\widehat G_n, G_{*})$"
+plt.plot(sample_list, average_merge, color='red', label = label)
 
-plt.plot(sample_list, reg.coef_*x + reg.intercept_, label="Linear Regression")
+plt.plot(x, reg.coef_*x + reg.intercept_, color='black', linestyle='-.', label=str(np.round(
+    reg.intercept_[0],1)) + \
+                                                                        "$n^{" + str(np.round(reg.coef_[0][0],5)) + "}$")
+
+# Labels & Legend
+plt.xlabel("log(sample size)", fontsize=14)
+plt.ylabel("log(loss)", fontsize=14)
+plt.title("Log-Log Scale Linear Regression", fontsize=16)
 plt.legend()
+plt.grid(True, linestyle="--", alpha=0.6)
 plt.show()
 
 
