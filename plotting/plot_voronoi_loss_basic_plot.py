@@ -4,9 +4,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 
-n_min = 1000
+n_min = 15000
 n_max = 100000
-n_iter = 80
+n_iter = 40
 iter = (n_max - n_min) // 40
 
 name = "../data/voronoi_loss_K3_" + str(n_min) + "_" + str(n_max) + "_" + str(n_iter) + ".json"
@@ -25,7 +25,7 @@ plt.plot(merge_voronoi_loss[:, 0], merge_voronoi_loss[:, 1], label="Merge")
 plt.xlabel("Log number of samples")
 plt.ylabel("Log Voronoi loss")
 plt.legend()
-#plt.show()
+plt.show()
 
 savename = "../figures/voronoi_loss_K3_" + str(n_min) + "_" + str(n_max) + "_" + str(n_iter) + ".png"
 plt.savefig(savename)

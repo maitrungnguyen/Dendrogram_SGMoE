@@ -63,49 +63,91 @@ class ParamNMoE:
         #print("Design Matrix", intercept)
         return np.hstack((intercept, X))
 
-    def init_param(self, segmental=False):
+    def init_param(self, segmental=False, favourable=False, true_alpha=None, true_beta=None, true_sigma2=None):
         """
         Initialize the parameters alpha, beta, and sigma2.
 
         Parameters:
         - segmental: If True, use segmental initialization; otherwise, use random initialization.
         """
-        if not segmental:
-            # Random initialization of clusters
-            klas = np.random.choice(self.K, self.n)
+        if not favourable:
+            if not segmental:
+                # Random initialization of clusters
+                klas = np.random.choice(self.K, self.n)
 
-            for k in range(self.K):
-                mask = klas == k
-                Xk = self.phiBeta[mask]
-                yk = self.Y[mask]
+                for k in range(self.K):
+                    mask = klas == k
+                    Xk = self.phiBeta[mask]
+                    yk = self.Y[mask]
 
-                if len(yk) == 0:  # Safeguard against empty clusters
-                    continue
+                    if len(yk) == 0:  # Safeguard against empty clusters
+                        continue
 
-                self.beta[:, k] = np.linalg.pinv(Xk.T @ Xk) @ (Xk.T @ yk)
-                self.sigma2[k] = np.mean((yk - Xk @ self.beta[:, k]) ** 2)
+                    self.beta[:, k] = np.linalg.pinv(Xk.T @ Xk) @ (Xk.T @ yk)
+                    self.sigma2[k] = np.mean((yk - Xk @ self.beta[:, k]) ** 2)
+            else:
+                # Segmental initialization
+                nk = self.n // self.K
+                klas = np.zeros(self.n, dtype=int)
+
+                for k in range(self.K):
+                    i, j = k * nk, min((k + 1) * nk, self.n)
+                    Xk = self.phiBeta[i:j]
+                    yk = self.Y[i:j]
+
+                    self.beta[:, k] = np.linalg.pinv(Xk.T @ Xk) @ (Xk.T @ yk)
+                    muk = Xk @ self.beta[:, k]
+                    self.sigma2[k] = np.mean((yk - muk) ** 2)
+                    klas[i:j] = k
+
+            # Initialize gating network parameters using IRLS
+            Z = np.zeros((self.n, self.K))
+            Z[np.arange(self.n), klas] = 1  # Hard assignment
+            tau = Z
+            res = IRLS(self.phiAlpha, tau, np.ones((self.n, 1)), self.alpha)
+            #res = IRLS_Cpp.IRLS(self.phiAlpha, tau, np.ones((self.n, 1)), self.alpha)
+            self.alpha = res["W"]
+
         else:
-            # Segmental initialization
-            nk = self.n // self.K
-            klas = np.zeros(self.n, dtype=int)
+            betak = true_beta
+            alphak = true_alpha
+            sigmak = true_sigma2
 
+            #add one more 0's column for alphak
+            alphak = np.append(alphak, np.zeros((alphak.shape[0], 1)), axis=1)
+
+            available_K = betak.shape[1]  # True number of components
+
+            # Allocate space for parameters
+            beta_start = np.empty((betak.shape[0], self.K))
+            sigma2_start = np.empty(self.K)
+            alpha_start = np.empty((alphak.shape[0], self.K - 1))  # Reduce to (K-1)
+
+            # Partition K into available_K components
+            s_inds = np.random.choice(available_K, size=self.K, replace=True)
+
+            # Small perturbations for initialization
             for k in range(self.K):
-                i, j = k * nk, min((k + 1) * nk, self.n)
-                Xk = self.phiBeta[i:j]
-                yk = self.Y[i:j]
+                beta_start[:, k] = betak[:, s_inds[k]] + np.random.normal(0, 0.005 * self.n ** (-0.083),
+                                                                          size=betak.shape[0])
+                sigma2_start[k] = sigmak[s_inds[k]] + np.abs(np.random.normal(0, 0.0005 * self.n ** (-0.25), size=1))
+                if k < self.K - 1:  # Only update K-1 gating parameters
+                    alpha_start[:, k] = alphak[:, s_inds[k]] + np.random.normal(0, 0.005 * self.n ** (-0.083),
+                                                                                size=alphak.shape[0])
 
-                self.beta[:, k] = np.linalg.pinv(Xk.T @ Xk) @ (Xk.T @ yk)
-                muk = Xk @ self.beta[:, k]
-                self.sigma2[k] = np.mean((yk - muk) ** 2)
-                klas[i:j] = k
+            # Assign to model parameters
+            self.beta = beta_start
+            self.sigma2 = sigma2_start
+            self.alpha = alpha_start  # Reduce alpha to (K-1)
 
-        # Initialize gating network parameters using IRLS
-        Z = np.zeros((self.n, self.K))
-        Z[np.arange(self.n), klas] = 1  # Hard assignment
-        tau = Z
-        res = IRLS(self.phiAlpha, tau, np.ones((self.n, 1)), self.alpha)
-        #res = IRLS_Cpp.IRLS(self.phiAlpha, tau, np.ones((self.n, 1)), self.alpha)
-        self.alpha = res["W"]
+            # Initialize gating network using IRLS
+            Z = np.zeros((self.n, self.K))
+            klas = np.random.choice(self.K, self.n)  # Assign clusters (randomly for now)
+            Z[np.arange(self.n), klas] = 1  # Hard assignment
+
+            tau = Z
+            res = IRLS(self.phiAlpha, tau, np.ones((self.n, 1)), self.alpha)
+            self.alpha = res["W"]
 
     def M_step(self, statNMoE, verbose_IRLS=False):
         """

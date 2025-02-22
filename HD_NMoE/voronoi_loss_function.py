@@ -14,6 +14,7 @@ def construct_voronoi_cells(true_components, dendrogram:Dendrogram, level):
     for i in range(len(true_components)):
         A_i = []
         true_component_i = true_components[i]
+        #print(len(dendrogram.dendrogram_tree[level]))
         for j in range(len(dendrogram.dendrogram_tree[level])):
             node_j = dendrogram.dendrogram_tree[level][j]
             for k in range(len(true_components)):

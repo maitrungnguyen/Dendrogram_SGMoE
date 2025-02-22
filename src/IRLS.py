@@ -24,9 +24,7 @@ def IRLS(X, Tau, Gamma, Winit, verbose=False, max_iter=300, lambda_reg=1e-9):
     """
     n, K = Tau.shape
     q = X.shape[1]  # q here is the number of predictors
-    #print(X)
-    #print(Tau)
-    #print(Winit)
+
     I = np.eye(q * (K - 1))  # Identity matrix for regularization
     W_old = Winit
     piik_old = np.zeros((n, K))
@@ -36,13 +34,12 @@ def IRLS(X, Tau, Gamma, Winit, verbose=False, max_iter=300, lambda_reg=1e-9):
     result = multinomialLogit(W_old, X, Tau, Gamma)
     loglik_old = result["loglik"] - lambda_reg * np.linalg.norm(W_old)**2
     piik_old = result["piik"]
-    #print("piik_old",piik_old)
+
     iter = 0
     converge = False
-    #print("W_old", W_old)
+
     if verbose:
         print(f"IRLS: Iteration {iter}, Log-likelihood: {loglik_old}")
-        #print(W_old)
 
     while not converge and iter < max_iter:
         # Gradient computation
@@ -56,26 +53,18 @@ def IRLS(X, Tau, Gamma, Winit, verbose=False, max_iter=300, lambda_reg=1e-9):
         Hw_old = np.zeros((q * (K - 1), q * (K - 1)))
         for k in range(K - 1):
             for ell in range(K - 1):
-                delta_kl = 1 if k == ell else 0
+                delta_kl = 1 if k == ell else 0  # Kronecker delta
                 gwk = Gamma[:, 0] * piik_old[:, k] * (delta_kl - piik_old[:, ell])
                 for qqa in range(q):
                     for qqb in range(q):
                         Hw_old[k * q + qqa, ell * q + qqb] -= np.dot(X[:, qqa] * gwk, X[:, qqb])
-                        #print(X[:, qqa])
-                        #print(X[:, qqb])
-                        #exit(1)
 
-        # Regularization
+        # Add regularization term
         Hw_old += lambda_reg * I
-        #print("gw_old", gw_old)
         gw = gw_old.flatten() - lambda_reg * W_old.flatten()
 
         # Newton-Raphson update
-        #print("W_old",W_old)
-        #print("Hw_old",Hw_old)
-        #print("gw",gw)
         w_new = W_old.flatten() - np.linalg.solve(Hw_old, gw)
-        #print(Hw_old, gw)
         W = w_new.reshape(W_old.shape)
 
         # Update probabilities and log-likelihood
@@ -107,7 +96,6 @@ def IRLS(X, Tau, Gamma, Winit, verbose=False, max_iter=300, lambda_reg=1e-9):
 
         if verbose:
             print(f"IRLS: Iteration {iter}, Log-likelihood: {loglik}")
-            #print(W)
 
     if verbose:
         if converge:

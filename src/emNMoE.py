@@ -3,12 +3,12 @@ from paramNMoE import ParamNMoE
 from statNMoE import StatNMoE
 from modelNMoE import ModelNMoE
 
-def emNMoE(X, Y, K, p=1, q=1, n_tries=1, max_iter=1500, threshold=1e-6, verbose=False, verbose_IRLS=False, favourable=False, true_alpha=None, true_beta=None, true_sigma2=None):
+def emNMoE(X, Y, K, p=3, q=1, n_tries=1, max_iter=1500, threshold=1e-6, verbose=False, verbose_IRLS=False):
     """
     EM algorithm for fitting a Normal Mixture of Experts (NMoE) model.
     Parameters:
-    - X: inputs (covariates).
-    - Y:  NumPy array of responses (outputs).
+    - X: 1D NumPy array of inputs (covariates).
+    - Y: 1D NumPy array of responses (outputs).
     - K: Number of experts.
     - p: Order of polynomial regression for experts (default: 3).
     - q: Order of logistic regression for the gating network (default: 1).
@@ -32,8 +32,7 @@ def emNMoE(X, Y, K, p=1, q=1, n_tries=1, max_iter=1500, threshold=1e-6, verbose=
 
         # Initialization
         param = ParamNMoE(X=X, Y=Y, K=K, p=p, q=q)
-        #param.check()
-        param.init_param(segmental=False, favourable=favourable, true_alpha=true_alpha, true_beta=true_beta, true_sigma2=true_sigma2)
+        param.init_param(segmental=False)
 
         stat = StatNMoE(paramNMoE=param)
 

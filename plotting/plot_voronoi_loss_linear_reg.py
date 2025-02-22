@@ -2,12 +2,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import json
 
-with open('../data/voronoi_loss_K3_35000_100000_40.json') as f:
+with open('../data/experiment 1/voronoi_loss_K3_1000_100000_40_30.json') as f:
     data = json.load(f)
 
 # Extract Data
-x = np.array(data['merge'])[:, 0]
-y = np.array(data['merge'])[:, 1]
+x = np.array(data['exact'])[:, 0]
+y = np.array(data['exact'])[:, 1]
 
 #Eliminate the first element
 x = x[1:]

@@ -38,14 +38,14 @@ print(average_merge)
 
 #linear regression
 x = np.array(sample_list).reshape(-1, 1)
-y = average_merge.reshape(-1, 1)
+y = average_exact.reshape(-1, 1)
 
 from sklearn.linear_model import LinearRegression
 reg = LinearRegression().fit(x, y)
 print(reg.coef_)
 print(reg.intercept_)
 label = "$\mathcal{D}_2(\widehat G_n, G_{*})$"
-plt.plot(sample_list, average_merge, color='red', label = label)
+plt.plot(sample_list, average_exact, color='red', label = label)
 
 plt.plot(x, reg.coef_*x + reg.intercept_, color='black', linestyle='-.', label=str(np.round(
     reg.intercept_[0],1)) + \

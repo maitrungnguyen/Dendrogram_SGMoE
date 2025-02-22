@@ -165,9 +165,10 @@ class Dendrogram:
         if self.dendrogram_tree is None:
             self.create_dendrogram_tree()
         for level in self.dendrogram_tree:
-            print("Level:")
+            print("Level:", level)
+            print("Number of Components:", len(level))
             for component in level:
-                print(component.weight, component.parameters)
+                component.display_component()
 
     def plot_dendrogram(self):
         if self.dendrogram_tree is None:
@@ -216,11 +217,12 @@ class Dendrogram:
             current_regression_coefficients = np.column_stack((current_regression_coefficients, component_beta)) if current_regression_coefficients is not None else component_beta.reshape(-1, 1)
             current_sigma2 = np.append(current_sigma2, component_sigma2) if current_sigma2 is not None else np.array([component_sigma2])
 
+        #print("Number of Components:", len(self.dendrogram_tree[level]))
         # print("Level:", level)
-        #print("Gating Coefficients:")
-        #print(current_gating_cofficients)
-        #print(current_regression_coefficients)
-        #print(current_sigma2)
+        # print("Gating Coefficients:")
+        # print(current_gating_cofficients)
+        # print(current_regression_coefficients)
+        # print(current_sigma2)
 
 
         # current_paramNMoE = ParamNMoE(self.X, self.Y, len(self.dendrogram_tree[level]), self.p, self.q)
@@ -243,7 +245,10 @@ class Dendrogram:
         log_likelihood = self.compute_log_likelihood(self.X, self.Y, current_gating_cofficients, current_regression_coefficients, current_sigma2)
         aic_value = -2 * log_likelihood + 2 * (current_gating_cofficients.shape[0] + current_regression_coefficients.shape[0] + current_sigma2.shape[0])
         bic_value = -2 * log_likelihood + (current_gating_cofficients.shape[0] + current_regression_coefficients.shape[0] + current_sigma2.shape[0]) * np.log(self.X.shape[0])
-        d_n_k = self.distance_list[level - 1]
+        d_n_k = self.distance_list[level]
+        # print("Distance:",d_n_k)
+        # print("Log Likelihood:", log_likelihood)
+        #print("DL:", self.distance_list)
         # print("D_n_k:", d_n_k)
         # print("Log Likelihood:", log_likelihood)
         # print(self.X.shape[0])
@@ -259,7 +264,8 @@ class Dendrogram:
         aic_scores = []
         bic_scores = []
 
-        for i in range(1, len(self.dendrogram_tree)):
+        for i in range(1, len(self.dendrogram_tree)-1):
+            #print("Level:", i)
             dic, aic, bic = self.calculate_dic_for_level_with_score(i)
             dic_scores.append(dic)
             aic_scores.append(aic)
@@ -331,8 +337,10 @@ class Dendrogram:
         aic_scores = []
         bic_scores = []
 
-        for i in range(1, len(self.dendrogram_tree)):
+        for i in range(0, len(self.dendrogram_tree)-1):
+            #print("Level:", i)
             dic, aic, bic = self.calculate_dic_for_level_with_score(i)
+            #print(dic)
             dic_scores.append(dic)
             aic_scores.append(aic)
             bic_scores.append(bic)
