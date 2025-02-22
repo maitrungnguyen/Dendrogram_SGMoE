@@ -1,1 +1,1 @@
-{"name": "experiment 2", "type": "voronoi_loss_dic", "n_tries": 7, "n_features": 2, "K": 3, "K_max": 5, "n_min": 50000, "n_max": 50000, "n_iter": 40, "alphak": [[0.3, 0.5], [1, 1], [-1, 0.5]], "betak": [[0.5, 0.5, 0.5], [-1.5, 0.6, 1.1], [0.9, 0.5, -0.3]], "sigmak": [0.8, 0.2, 1.2]}
+{"name": "experiment 2", "type": "voronoi_loss_dic", "n_tries": 1, "n_features": 2, "K": 3, "K_max": 5, "n_min": 50000, "n_max": 50000, "n_iter": 40, "alphak": [[0.3, 0.5], [1, 1], [-1, 0.5]], "betak": [[0.5, 0.5, 0.5], [-1.5, 0.6, 1.1], [0.9, 0.5, -0.3]], "sigmak": [0.8, 0.2, 1.2]}
