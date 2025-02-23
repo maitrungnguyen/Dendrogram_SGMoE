@@ -29,7 +29,7 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
                       ]),
     sigmak = np.array([0.9, 0.5, 1.2]),
     n_tries = 1,
-    name_exp = "experiment 1/description.json", favourable = False
+    name_exp = "experiment 1", favourable = False
     ):
 
     #np.random.seed(42)
@@ -82,7 +82,7 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
 
         exact_ddg = Dendrogram(exact_fitted_model, x, y)
         exact_ddg.create_dendrogram_tree()
-
+        exact_fitted_model.summary()
         true_voronoi_cells_0 = construct_voronoi_cells(true_components, exact_ddg, 0)
         # exact_voronoi_loss.append({
         #     "log_n_samples": log(n_samples),

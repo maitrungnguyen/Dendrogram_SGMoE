@@ -10,7 +10,7 @@ def emNMoE(X, Y, K, p=1, q=1, n_tries=1, max_iter=1500, threshold=1e-6, verbose=
     - X: inputs (covariates).
     - Y:  NumPy array of responses (outputs).
     - K: Number of experts.
-    - p: Order of polynomial regression for experts (default: 3).
+    - p: Order of polynomial regression for experts (default: 1).
     - q: Order of logistic regression for the gating network (default: 1).
     - n_tries: Number of EM runs (default: 1). The best solution is returned.
     - max_iter: Maximum number of iterations for the EM algorithm (default: 1500).
