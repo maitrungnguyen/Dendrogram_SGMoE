@@ -224,6 +224,7 @@ class ModelNMoE:
         print("Variances:")
         for k, var in enumerate(self.param.sigma2.flatten()):
             print(f"Expert {k + 1}: {var:.8f}")
+        self.output_gating_coefficients()
         print()
 
     def output_gating_coefficients(self):

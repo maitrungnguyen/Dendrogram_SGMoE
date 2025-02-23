@@ -116,7 +116,7 @@ class ParamNMoE:
             #add one more 0's column for alphak
             alphak = np.append(alphak, np.zeros((alphak.shape[0], 1)), axis=1)
 
-            available_K = betak.shape[1]  # True number of components
+            available_K = betak.shape[1]
 
             # Allocate space for parameters
             beta_start = np.empty((betak.shape[0], self.K))
@@ -124,8 +124,13 @@ class ParamNMoE:
             alpha_start = np.empty((alphak.shape[0], self.K - 1))  # Reduce to (K-1)
 
             # Partition K into available_K components
-            s_inds = np.random.choice(available_K, size=self.K, replace=True)
+            s_inds = np.arange(available_K)
+            if self.K > available_K:
+                extra_inds = np.random.choice(available_K, size=self.K - available_K, replace=True)
+                s_inds = np.concatenate([s_inds, extra_inds])
 
+            np.random.shuffle(s_inds)
+            print(s_inds)
             # Small perturbations for initialization
             for k in range(self.K):
                 beta_start[:, k] = betak[:, s_inds[k]] + np.random.normal(0, 0.005 * self.n ** (-0.083),
