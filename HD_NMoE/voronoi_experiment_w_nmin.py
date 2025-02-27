@@ -79,7 +79,7 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
         p = 1
         q = 1
         exact_fitted_model = emNMoE(X=x, Y=y, K=K, p=p, q=q, verbose=False, favourable = favourable, true_alpha = alphak, true_beta = betak, true_sigma2 = sigmak)
-
+        # exact_fitted_model.summary()
         exact_ddg = Dendrogram(exact_fitted_model, x, y)
         exact_ddg.create_dendrogram_tree()
         exact_fitted_model.summary()
