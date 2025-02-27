@@ -5,14 +5,14 @@ from matplotlib.ticker import PercentFormatter
 
 
 data = []
-for i in range (1, 4):
+for i in range (7, 19):
     print(i)
     temp = []
-    with open(f"../data/experiment 1/voronoi_loss_K3_100000_100000_40_{i}.json", "r") as file:
+    with open(f"../data/experiment 3/voronoi_loss_K3_1000_100000_40_{i}.json", "r") as file:
         temp = (json.load(file))
 
     for j in temp["argmin_dic"]:
-        data.append(j[1]+1)
+        data.append(j[1])
 
 plt.hist(data, weights=np.ones(len(data)) / len(data))
 
