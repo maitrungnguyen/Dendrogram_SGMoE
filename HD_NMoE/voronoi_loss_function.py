@@ -68,13 +68,35 @@ def voronoi_loss_function(G:MixingMeasure, G_0:MixingMeasure, t_0, t_1):
     for i in range(G_0.K):
         temp_sum = 0
         for j in G_0.voronoi_cells[i]:
-            temp_sum += (np.exp(G.components[j].w_0k) - np.exp(G_0.components[i].w_0k+ t_0))
+            temp_sum += (np.exp(G.components[j].w_0k))
+        temp_sum -= np.exp(G_0.components[i].w_0k+ t_0)
         sum_gating += temp_sum
 
     loss = sum_over_1 + sum_exact_1 + sum_gating
     return loss
 
 
+def voronoi_loss_D1(G, G_0, t_0, t_1):
+    loss = 0
+
+    for k in range(G_0.K):
+        sum_weighted_norms = 0
+        sum_gating = 0
+
+        for l in G_0.voronoi_cells[k]:
+            delta_t1_w1k = np.linalg.norm(G.components[l].w_1k - G_0.components[k].w_1k - t_1)
+            delta_A_k = np.linalg.norm(G.components[l].A_k - G_0.components[k].A_k)
+            delta_b_k = np.linalg.norm(G.components[l].b_k - G_0.components[k].b_k)
+            delta_sigma2 = np.linalg.norm(G.components[l].sigma2 - G_0.components[k].sigma2)
+
+            norm_term = np.linalg.norm([delta_t1_w1k, delta_A_k, delta_b_k, delta_sigma2])
+            sum_weighted_norms += np.exp(G.components[l].w_0k) * norm_term
+            sum_gating += np.exp(G.components[l].w_0k)
+
+        sum_gating -= np.exp(G_0.components[k].w_0k + t_0)
+        loss += sum_weighted_norms + abs(sum_gating)
+
+    return loss
 
 
 # with open("../data/output_data_2D.json", "r") as file:

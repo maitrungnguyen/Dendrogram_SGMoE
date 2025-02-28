@@ -116,24 +116,21 @@ class ParamNMoE:
             #add one more 0's column for alphak
             alphak = np.append(alphak, np.zeros((alphak.shape[0], 1)), axis=1)
 
-            available_K = betak.shape[1]  # Number of available true components
-
-            # Ensure every index appears exactly once except the last expert, which is fixed
-            s_inds = np.arange(available_K - 1)  # Exclude last index initially
-            if self.K > available_K:
-                extra_inds = np.random.choice(available_K, size=self.K - available_K, replace=True)
-                s_inds = np.concatenate([s_inds, extra_inds])
-
-            np.random.shuffle(s_inds)  # Shuffle the assigned indices
-
-            # Append the last true component index for the last expert
-            s_inds = np.append(s_inds, available_K - 1)
+            available_K = betak.shape[1]
 
             # Allocate space for parameters
             beta_start = np.empty((betak.shape[0], self.K))
             sigma2_start = np.empty(self.K)
             alpha_start = np.empty((alphak.shape[0], self.K - 1))  # Reduce to (K-1)
 
+            # Partition K into available_K components
+            s_inds = np.arange(available_K)
+            if self.K > available_K:
+                extra_inds = np.random.choice(available_K, size=self.K - available_K, replace=True)
+                s_inds = np.concatenate([s_inds, extra_inds])
+
+            np.random.shuffle(s_inds)
+            print(s_inds)
             # Small perturbations for initialization
             for k in range(self.K):
                 beta_start[:, k] = betak[:, s_inds[k]] + np.random.normal(0, 0.005 * self.n ** (-0.083),
@@ -142,7 +139,7 @@ class ParamNMoE:
                 if k < self.K - 1:  # Only update K-1 gating parameters
                     alpha_start[:, k] = alphak[:, s_inds[k]] + np.random.normal(0, 0.005 * self.n ** (-0.083),
                                                                                 size=alphak.shape[0])
-            print(s_inds)
+
             # Assign to model parameters
             self.beta = beta_start
             self.sigma2 = sigma2_start
