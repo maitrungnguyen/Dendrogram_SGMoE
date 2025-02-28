@@ -43,7 +43,36 @@ class ComponentNode:
         total_w1k = (exp_1 * component1.w_1k + exp_2 * component2.w_1k)
         total_Ak = (exp_1 * component1.A_k + exp_2 * component2.A_k)
         total_bk = (exp_1 * component1.b_k + exp_2 * component2.b_k)
-        total_sigma2 = (exp_1 * component1.sigma2 + exp_2 * component2.sigma2)
+        #print([component1.w_1k, component1.A_k[0], component1.A_k[1], component1.b_k])
+
+
+        #mu_i = np.array([component1.w_1k[0], component1.w_1k[1], component1.A_k[0], component1.A_k[1], component1.b_k])
+        #mu_j = np.array([component2.w_1k[0], component2.w_1k[1], component2.A_k[0], component1.A_k[1], component2.b_k])
+        #mu_total = np.array([total_w1k[0], total_w1k[1], total_Ak[0], total_Ak[1], total_bk])
+        mu_i = []
+        mu_j = []
+        mu_total = []
+        for i in range(len(component1.w_1k)):
+            mu_i.append(component1.w_1k[i])
+            mu_j.append(component2.w_1k[i])
+            mu_total.append(total_w1k[i])
+        for i in range(len(component1.A_k)):
+            mu_i.append(component1.A_k[i])
+            mu_j.append(component2.A_k[i])
+            mu_total.append(total_Ak[i])
+        mu_i.append(component1.b_k)
+        mu_j.append(component2.b_k)
+        mu_total.append(total_bk)
+        mu_i = np.array(mu_i)
+        mu_j = np.array(mu_j)
+        mu_total = np.array(mu_total)
+
+
+
+        #total_sigma2 = (exp_1 * component1.sigma2 + exp_2 * component2.sigma2)
+
+        total_sigma2 = exp_1*(component1.sigma2 + (mu_i - mu_total)@(mu_i - mu_total).T) + exp_2*(component2.sigma2 + (mu_j - mu_total)@(mu_j - mu_total).T)
+
         #print("New Component:", total_w0k, total_w1k, total_Ak, total_bk, total_sigma2)
         new_component = ComponentNode(np.concatenate(([total_w0k], total_w1k)), np.concatenate(([total_bk], total_Ak)), total_sigma2, position=None, leafs=component1.get_leafs() + component2.get_leafs())
         new_component.children.append(component1)
@@ -79,12 +108,13 @@ class ComponentNode:
         print("Position:", self.position)
 
     def voronoi_distance(component1, component2):
-
+        # omega_1 = np.array([component1.w_1k, component1.A_k, component1.b_k, component1.sigma2])
+        # omega_2 = np.array([component2.w_1k, component2.A_k, component2.b_k, component2.sigma2])
         w_1k_diff = np.linalg.norm(component1.w_1k - component2.w_1k)**2
         A_k_diff = np.linalg.norm(component1.A_k - component2.A_k)**2
-        b_k_diff = (component1.b_k - component2.b_k)**2
-        sigma2_diff = (component1.sigma2 - component2.sigma2)**2
-        return (w_1k_diff + A_k_diff + b_k_diff + sigma2_diff)
+        b_k_diff = np.linalg.norm(component1.b_k - component2.b_k)**2
+        sigma2_diff = abs(component1.sigma2 - component2.sigma2)**2
+        return (w_1k_diff + A_k_diff + b_k_diff + sigma2_diff)**(1/2)
 
 
 class Dendrogram:
