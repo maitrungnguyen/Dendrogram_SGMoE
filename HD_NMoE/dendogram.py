@@ -224,7 +224,7 @@ class Dendrogram:
 
     def calculate_dic_for_level_with_score(self, level):
         """
-        Calculate the Dendrogram Information Criterion (DIC) for a specific level using sklearn's `score()`.
+        Calculate the Dendrogram Information Criterion (DIC) for a specific level using sklearn's score().
 
         Parameters:
         - data: np.array, the dataset (n_samples, n_features).

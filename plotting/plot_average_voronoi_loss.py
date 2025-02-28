@@ -8,10 +8,10 @@ exact_data = []
 over_data = []
 merge_data = []
 
-for i in range (7, 19):
+for i in range (1, 57):
     print(i)
     temp = []
-    with open(f"../data/experiment 3/voronoi_loss_K3_1000_100000_40_{i}.json", "r") as file:
+    with open(f"../data/experiment 1/voronoi_loss_K3_1000_100000_40_{i}.json", "r") as file:
         temp = (json.load(file))
 
     temp_exact = np.array(temp["exact"])

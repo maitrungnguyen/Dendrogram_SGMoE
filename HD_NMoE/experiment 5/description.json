@@ -1,4 +1,4 @@
-{"name": "experiment 5", "type": "voronoi_loss_dic", "n_tries": 1, "n_features": 1, "K": 2, "K_max": 5, "n_min": 1000, "n_max": 100000, "n_iter": 40,
+{"name": "experiment 5", "type": "voronoi_loss_dic", "n_tries": 30, "n_features": 1, "K": 2, "K_max": 5, "n_min": 1000, "n_max": 100000, "n_iter": 40,
   "alphak": [[-8], [25]],
   "betak": [[15, -5], [-20, 20]],
   "sigmak": [0.3, 0.4],
