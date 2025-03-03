@@ -32,7 +32,9 @@ class ComponentNode:
         A_k_diff = np.linalg.norm(component1.A_k - component2.A_k)**2
         b_k_diff = (component1.b_k - component2.b_k)**2
         sigma2_diff = (component1.sigma2 - component2.sigma2)**2
-        return w_0k_diff*(w_1k_diff + A_k_diff + b_k_diff + sigma2_diff)
+        #return w_0k_diff*(w_1k_diff + A_k_diff + b_k_diff)
+        sum = (A_k_diff+sigma2_diff)**(1/2)
+        return w_0k_diff*(w_1k_diff +b_k_diff + sum)
 
     @staticmethod
     def merge(component1, component2):
@@ -69,9 +71,9 @@ class ComponentNode:
 
 
 
-        #total_sigma2 = (exp_1 * component1.sigma2 + exp_2 * component2.sigma2)
+        total_sigma2 = (exp_1 * component1.sigma2 + exp_2 * component2.sigma2)
 
-        total_sigma2 = exp_1*(component1.sigma2 + (mu_i - mu_total)@(mu_i - mu_total).T) + exp_2*(component2.sigma2 + (mu_j - mu_total)@(mu_j - mu_total).T)
+        #total_sigma2 = exp_1*(component1.sigma2 + (mu_i - mu_total)@(mu_i - mu_total).T) + exp_2*(component2.sigma2 + (mu_j - mu_total)@(mu_j - mu_total).T)
 
         #print("New Component:", total_w0k, total_w1k, total_Ak, total_bk, total_sigma2)
         new_component = ComponentNode(np.concatenate(([total_w0k], total_w1k)), np.concatenate(([total_bk], total_Ak)), total_sigma2, position=None, leafs=component1.get_leafs() + component2.get_leafs())

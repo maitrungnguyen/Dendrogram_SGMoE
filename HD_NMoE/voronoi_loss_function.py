@@ -62,7 +62,7 @@ def voronoi_loss_function(G:MixingMeasure, G_0:MixingMeasure, t_0, t_1):
                 delta_A_k = np.linalg.norm(G.components[j].A_k - G_0.components[i].A_k)**2
                 delta_sigma2 = np.linalg.norm(G.components[j].sigma2 - G_0.components[i].sigma2)**2
 
-                sum_exact_1 += (delta_t1_w1k + delta_b_k + delta_A_k + delta_sigma2)*np.exp(G.components[j].w_0k)
+                sum_exact_1 += (delta_t1_w1k + delta_b_k + delta_A_k + delta_sigma2)**(1/2)*np.exp(G.components[j].w_0k)
 
     sum_gating = 0
     for i in range(G_0.K):

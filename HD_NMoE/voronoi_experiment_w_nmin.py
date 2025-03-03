@@ -12,7 +12,7 @@ from emNMoE import emNMoE
 from scipy.cluster.hierarchy import dendrogram, linkage
 from dendogram import Dendrogram, ComponentNode
 from sampleUniv import sample_univ_nmoe
-from voronoi_loss_function import construct_voronoi_cells, voronoi_loss_function, MixingMeasure
+from voronoi_loss_function import construct_voronoi_cells, voronoi_loss_function, voronoi_loss_D1, MixingMeasure
 import time
 
 def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
@@ -36,9 +36,10 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
 
     start = time.time()
     argmin_dic = []
-
-    iter = (n_max - n_min) // n_iter
-
+    log_min = log(n_min)
+    log_max = log(n_max)
+    log_iter = (log_max - log_min)/float(n_iter)
+    print(log_min, log_max, log_iter)
     alphak = np.array(alphak)
     betak = np.array(betak)
     sigmak = np.array(sigmak)
@@ -55,13 +56,19 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
     true_components.append(component)
 
     exact_voronoi_loss = []
+    exact_d1_voronoi_loss = []
     over_voronoi_loss = []
     merge_voronoi_loss = []
+    merge_d1_voronoi_loss = []
 
     for i in range (n_iter):
-        n_samples = n_min + i * iter
+        # n_samples = n_min + i * iter
+        # print(n_samples)
+        log_n_samples = log_min + i*log_iter
+        n_samples = int(exp(log_n_samples))
         print(n_samples)
-        X = np.random.normal(0, 1, size=(n_samples, n_features))
+
+        X = np.random.uniform(0, 1, (n_samples, n_features))
 
 
         # Sample data
@@ -79,10 +86,9 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
         p = 1
         q = 1
         exact_fitted_model = emNMoE(X=x, Y=y, K=K, p=p, q=q, verbose=False, favourable = favourable, true_alpha = alphak, true_beta = betak, true_sigma2 = sigmak)
-        # exact_fitted_model.summary()
         exact_ddg = Dendrogram(exact_fitted_model, x, y)
         exact_ddg.create_dendrogram_tree()
-        exact_fitted_model.summary()
+        #exact_fitted_model.summary()
         true_voronoi_cells_0 = construct_voronoi_cells(true_components, exact_ddg, 0)
         # exact_voronoi_loss.append({
         #     "log_n_samples": log(n_samples),
@@ -92,6 +98,11 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
             log(n_samples),
             log(voronoi_loss_function(MixingMeasure(exact_ddg.dendrogram_tree[0]), MixingMeasure(true_components, true_voronoi_cells_0), 0, 0))
         ])
+        exact_d1_voronoi_loss.append([
+            log(n_samples),
+            log(voronoi_loss_D1(MixingMeasure(exact_ddg.dendrogram_tree[0]), MixingMeasure(true_components, true_voronoi_cells_0), 0, 0))
+        ])
+
 
         K = n_over_components
         p = 1
@@ -126,6 +137,13 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
             log(n_samples),
             log(voronoi_loss_function(MixingMeasure(merge_ddg.dendrogram_tree[n_over_components-n_components]), MixingMeasure(true_components, true_voronoi_cells_0), 0, 0))
         ])
+        merge_d1_voronoi_loss.append([
+            log(n_samples),
+            log(voronoi_loss_D1(MixingMeasure(merge_ddg.dendrogram_tree[n_over_components-n_components]), MixingMeasure(true_components, true_voronoi_cells_0), 0, 0))
+        ])
+
+    exact_d1_voronoi_loss = np.array(exact_d1_voronoi_loss)
+    merge_d1_voronoi_loss = np.array(merge_d1_voronoi_loss)
 
     exact_voronoi_loss = np.array(exact_voronoi_loss)
     over_voronoi_loss = np.array(over_voronoi_loss)
@@ -137,9 +155,11 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
     # print(argmin_dic)
     with open(name, "w") as file:
         json.dump({
-            "exact": exact_voronoi_loss.tolist(),
+            "exact_d1": exact_d1_voronoi_loss.tolist(),
+            "exact_d2": exact_voronoi_loss.tolist(),
             "over": over_voronoi_loss.tolist(),
-            "merge": merge_voronoi_loss.tolist(),
+            "merge_d1": merge_d1_voronoi_loss.tolist(),
+            "merge_d2": merge_voronoi_loss.tolist(),
             "argmin_dic": argmin_dic,
             "time_elapsed": time_elapsed
         }, file)
