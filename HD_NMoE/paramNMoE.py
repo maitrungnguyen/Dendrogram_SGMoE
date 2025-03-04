@@ -123,13 +123,16 @@ class ParamNMoE:
             sigma2_start = np.empty(self.K)
             alpha_start = np.empty((alphak.shape[0], self.K - 1))  # Reduce to (K-1)
 
-            # Partition K into available_K components
-            s_inds = np.arange(available_K)
+            s_inds = np.arange(available_K - 1)  # Exclude last index initially
             if self.K > available_K:
                 extra_inds = np.random.choice(available_K, size=self.K - available_K, replace=True)
                 s_inds = np.concatenate([s_inds, extra_inds])
 
-            np.random.shuffle(s_inds)
+            np.random.shuffle(s_inds)  # Shuffle the assigned indices
+
+            # Append the last true component index for the last expert
+            s_inds = np.append(s_inds, available_K - 1)
+
             print(s_inds)
             # Small perturbations for initialization
             for k in range(self.K):
