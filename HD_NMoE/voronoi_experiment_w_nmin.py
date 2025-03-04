@@ -39,6 +39,7 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
     log_min = log(n_min)
     log_max = log(n_max)
     log_iter = (log_max - log_min)/float(n_iter)
+    iter = (n_max - n_min)//n_iter
     print(log_min, log_max, log_iter)
     alphak = np.array(alphak)
     betak = np.array(betak)
@@ -62,14 +63,21 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
     merge_d1_voronoi_loss = []
 
     for i in range (n_iter):
-        # n_samples = n_min + i * iter
+        # # n_samples = n_min + i * iter
+        # # print(n_samples)
+        # log_n_samples = log_min + i*log_iter
+        # n_samples = int(exp(log_n_samples))
         # print(n_samples)
-        log_n_samples = log_min + i*log_iter
-        n_samples = int(exp(log_n_samples))
+        #
+        # X = np.random.uniform(0, 1, (n_samples, n_features))
+        #
+        #
+        # # Sample data
+        # data = sample_univ_nmoe(alphak, betak, sigmak, X)
+
+        n_samples = n_min + i * iter
         print(n_samples)
-
-        X = np.random.uniform(0, 1, (n_samples, n_features))
-
+        X = np.random.normal(0, 1, size=(n_samples, n_features))
 
         # Sample data
         data = sample_univ_nmoe(alphak, betak, sigmak, X)
@@ -112,14 +120,11 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
         over_ddg = Dendrogram(over_fitted_model, x, y)
         over_ddg.create_dendrogram_tree()
         true_voronoi_cells_0 = construct_voronoi_cells(true_components, over_ddg, 0)
-        # over_voronoi_loss.append({
-        #     "log_n_samples": log(n_samples),
-        #     "log_voronoi_loss": log(voronoi_loss_function(MixingMeasure(over_ddg.dendrogram_tree[0]), MixingMeasure(true_components, true_voronoi_cells_0), 0, 0))
-        # })
         over_voronoi_loss.append([
             log(n_samples),
             log(voronoi_loss_function(MixingMeasure(over_ddg.dendrogram_tree[0]), MixingMeasure(true_components, true_voronoi_cells_0), 0, 0))
         ])
+
         # K = n_over_components
         # p = 1
         # q = 1
@@ -129,10 +134,6 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
         print(n_over_components - merge_ddg.argmin_dic())
         argmin_dic.append([n_samples, n_over_components - merge_ddg.argmin_dic()])
         true_voronoi_cells_0 = construct_voronoi_cells(true_components, merge_ddg, n_over_components-n_components)
-        # merge_voronoi_loss.append({
-        #     "log_n_samples": log(n_samples),
-        #     "log_voronoi_loss": log(voronoi_loss_function(MixingMeasure(merge_ddg.dendrogram_tree[3]), MixingMeasure(true_components, true_voronoi_cells_0), 0, 0))
-        # })
         merge_voronoi_loss.append([
             log(n_samples),
             log(voronoi_loss_function(MixingMeasure(merge_ddg.dendrogram_tree[n_over_components-n_components]), MixingMeasure(true_components, true_voronoi_cells_0), 0, 0))
