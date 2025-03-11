@@ -1,0 +1,13 @@
+*500-553: new distance function.
+*553-573:
+\begin{align}
+    &\divclus \left( \exp(\omega_{0}) \delta_{(\vomega^{'}_{0}, \mA_0, \vb_0, \mSigma_0)}, \exp(\omega_{1}) \delta_{(\vomega^{'}_{1}, \mA_1, \vb_1, \mSigma_1)} \right) \nn\\
+    %%
+    &\quad = \frac{1}{\exp(-\omega_{0}) + \exp(-\omega_{1})}
+    \times \left( \norm{(\vomega^{'}_{0}, \mA_0, \vb_0) - (\vomega^{'}_{1}, \mA_1, \vb_1)}^2 + \norm{\mSigma_0 - \mSigma_1} \right). \label{eq_dissimilarity}
+    % \tag{?}
+\end{align}
+
+*574-1137: new distance function. test dic
+
+*1137 - ..,:
