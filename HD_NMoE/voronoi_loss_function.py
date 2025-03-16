@@ -17,10 +17,15 @@ def construct_voronoi_cells(true_components, dendrogram:Dendrogram, level):
         #print(len(dendrogram.dendrogram_tree[level]))
         for j in range(len(dendrogram.dendrogram_tree[level])):
             node_j = dendrogram.dendrogram_tree[level][j]
+            min = True
             for k in range(len(true_components)):
-                if ComponentNode.voronoi_distance(node_j, true_component_i) <= ComponentNode.voronoi_distance(node_j, true_components[k]):
-                    A_i.append(j)
+                if ComponentNode.voronoi_distance(node_j, true_component_i) > ComponentNode.voronoi_distance(node_j, true_components[k]):
+                    min = False
+                    break
+            if min:
+                A_i.append(j)
         voronoi_cell_list.append(A_i)
+    #print("Voronoi cells:", voronoi_cell_list)
     return voronoi_cell_list
 
 class MixingMeasure:
@@ -34,6 +39,7 @@ def voronoi_loss_function(G:MixingMeasure, G_0:MixingMeasure, t_0, t_1):
     loss = 0
     sum_over_1 = 0
     sum_exact_1 = 0
+
     for i in range(G_0.K):
         if (len(G_0.voronoi_cells[i]) > 1):
             for j in G_0.voronoi_cells[i]:
