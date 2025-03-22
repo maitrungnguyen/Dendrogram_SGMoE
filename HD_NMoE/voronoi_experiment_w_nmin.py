@@ -63,24 +63,24 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
     merge_d1_voronoi_loss = []
 
     for i in range (n_iter):
-        # # n_samples = n_min + i * iter
-        # # print(n_samples)
-        # log_n_samples = log_min + i*log_iter
-        # n_samples = int(exp(log_n_samples))
+        # n_samples = n_min + i * iter
         # print(n_samples)
-        #
-        # X = np.random.uniform(0, 1, (n_samples, n_features))
-        #
-        #
-        # # Sample data
-        # data = sample_univ_nmoe(alphak, betak, sigmak, X)
-
-        n_samples = n_min + i * iter
+        log_n_samples = log_min + i*log_iter
+        n_samples = int(exp(log_n_samples))
         print(n_samples)
-        X = np.random.normal(0, 1, size=(n_samples, n_features))
+
+        X = np.random.normal(0, 1, (n_samples, n_features))
+
 
         # Sample data
         data = sample_univ_nmoe(alphak, betak, sigmak, X)
+
+        # n_samples = n_min + i * iter
+        # print(n_samples)
+        # X = np.random.normal(0, 1, size=(n_samples, n_features))
+        #
+        # # Sample data
+        # data = sample_univ_nmoe(alphak, betak, sigmak, X)
 
         data = {
             "X": X.tolist(),
@@ -98,10 +98,7 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
         exact_ddg.create_dendrogram_tree()
         #exact_fitted_model.summary()
         true_voronoi_cells_0 = construct_voronoi_cells(true_components, exact_ddg, 0)
-        # exact_voronoi_loss.append({
-        #     "log_n_samples": log(n_samples),
-        #     "log_voronoi_loss": log(voronoi_loss_function(MixingMeasure(exact_ddg.dendrogram_tree[0]), MixingMeasure(true_components, true_voronoi_cells_0), 0, 0))
-        # })
+
         exact_voronoi_loss.append([
             log(n_samples),
             log(voronoi_loss_function(MixingMeasure(exact_ddg.dendrogram_tree[0]), MixingMeasure(true_components, true_voronoi_cells_0), 0, 0))
