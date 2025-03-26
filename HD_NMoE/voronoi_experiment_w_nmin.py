@@ -63,24 +63,24 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
     merge_d1_voronoi_loss = []
 
     for i in range (n_iter):
-        # # n_samples = n_min + i * iter
-        # # print(n_samples)
-        # log_n_samples = log_min + i*log_iter
-        # n_samples = int(exp(log_n_samples))
+        # n_samples = n_min + i * iter
         # print(n_samples)
-        #
-        # X = np.random.uniform(0, 1, (n_samples, n_features))
-        #
-        #
-        # # Sample data
-        # data = sample_univ_nmoe(alphak, betak, sigmak, X)
-
-        n_samples = n_min + i * iter
+        log_n_samples = log_min + i*log_iter
+        n_samples = int(exp(log_n_samples))
         print(n_samples)
-        X = np.random.normal(0, 1, size=(n_samples, n_features))
+
+        X = np.random.uniform(0, 1, (n_samples, n_features))
+
 
         # Sample data
         data = sample_univ_nmoe(alphak, betak, sigmak, X)
+
+        # n_samples = n_min + i * iter
+        # print(n_samples)
+        # X = np.random.normal(0, 1, size=(n_samples, n_features))
+        #
+        # # Sample data
+        # data = sample_univ_nmoe(alphak, betak, sigmak, X)
 
         data = {
             "X": X.tolist(),
@@ -176,6 +176,13 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
     # plt.show()
 
     #plt.savefig("../figures/voronoi_loss_2.png")
+
+
+
+
+
+
+
 
 
 

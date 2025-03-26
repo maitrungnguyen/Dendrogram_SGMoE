@@ -3,7 +3,7 @@ import json
 import numpy as np
 
 
-with open("experiment 3/description.json", "r") as file:
+with open("experiment 5/description.json", "r") as file:
     data = json.load(file)
 
 while True:
@@ -17,9 +17,9 @@ while True:
 
         print("Done")
         data["n_tries"] += 1
-        with open("experiment 3/description.json", "w") as file:
+        with open("experiment 5/description.json", "w") as file:
             json.dump(data, file)
         print(data["n_tries"])
     except:
-        break
+        continue
 
