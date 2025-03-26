@@ -3,7 +3,7 @@ from paramNMoE import ParamNMoE
 from statNMoE import StatNMoE
 from modelNMoE import ModelNMoE
 
-def emNMoE(X, Y, K, p=1, q=1, n_tries=1, max_iter=1500, threshold=1e-6, verbose=False, verbose_IRLS=False, favourable=False, true_alpha=None, true_beta=None, true_sigma2=None):
+def emNMoE(X, Y, K, p=1, q=1, n_tries=1, max_iter=2000, threshold=1e-6, verbose=False, verbose_IRLS=False, favourable=False, true_alpha=None, true_beta=None, true_sigma2=None):
     """
     EM algorithm for fitting a Normal Mixture of Experts (NMoE) model.
     Parameters:

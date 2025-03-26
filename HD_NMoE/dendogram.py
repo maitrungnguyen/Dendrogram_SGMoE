@@ -33,7 +33,8 @@ class ComponentNode:
         b_k_diff = (component1.b_k - component2.b_k)**2
         sigma2_diff = (component1.sigma2 - component2.sigma2)**2
         sum = (A_k_diff+sigma2_diff)**(1/2)
-        return w_0k_diff*(w_1k_diff + b_k_diff + A_k_diff + sigma2_diff**(1/2))
+        #print("Check")
+        return w_0k_diff*(b_k_diff + sum)
 
     @staticmethod
     def merge(component1, component2):
