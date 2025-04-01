@@ -69,7 +69,7 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
         n_samples = int(exp(log_n_samples))
         print(n_samples)
 
-        X = np.random.uniform(0, 1, (n_samples, n_features))
+        X = np.random.normal(0, 1, (n_samples, n_features))
 
 
         # Sample data
@@ -142,6 +142,7 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
             log(n_samples),
             log(voronoi_loss_D1(MixingMeasure(merge_ddg.dendrogram_tree[n_over_components-n_components]), MixingMeasure(true_components, true_voronoi_cells_0), 0, 0))
         ])
+        print("Check:", len(merge_ddg.dendrogram_tree[n_over_components - n_components]))
 
     exact_d1_voronoi_loss = np.array(exact_d1_voronoi_loss)
     merge_d1_voronoi_loss = np.array(merge_d1_voronoi_loss)

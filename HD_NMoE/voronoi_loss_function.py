@@ -76,7 +76,7 @@ def voronoi_loss_function(G:MixingMeasure, G_0:MixingMeasure, t_0, t_1):
         for j in G_0.voronoi_cells[i]:
             temp_sum += (np.exp(G.components[j].w_0k))
         temp_sum -= np.exp(G_0.components[i].w_0k+ t_0)
-        sum_gating += temp_sum
+        sum_gating += abs(temp_sum)
 
     loss = sum_over_1 + sum_exact_1 + sum_gating
     return loss
