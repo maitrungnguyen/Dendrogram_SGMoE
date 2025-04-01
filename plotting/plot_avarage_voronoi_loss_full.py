@@ -5,7 +5,7 @@ from sklearn.linear_model import LinearRegression
 
 # Parameters for selecting the range of data points
 n_begin = 0 # Start index (0-based)
-n_end = 80  # End index (exclusive)
+n_end = 80 # End index (exclusive)
 
 # Initialize lists
 sample_list = []
@@ -16,9 +16,9 @@ merge_data = []
 merge_data_d2 = []
 
 # Load data
-for i in range(1138, 1195):
+for i in range(1000, 1019):
     print(i)
-    with open(f"../data/experiment 3/voronoi_loss_K3_100_100000_80_{i}.json", "r") as file:
+    with open(f"../data/experiment 6/voronoi_loss_K3_100_100000_80_{i}.json", "r") as file:
         temp = json.load(file)
 
     temp_exact = np.array(temp["exact_d1"])
@@ -56,7 +56,8 @@ average_merge_d2 = np.mean(merge_data_d2, axis=0)
 
 # Perform linear regression for all cases
 x = np.array(sample_list).reshape(-1, 1)
-y_list = [average_exact, average_exact_d2, average_over, average_merge, average_merge_d2]
+y_list = [average_exact, average_exact_d2,
+          average_over, average_merge, average_merge_d2]
 labels = [
     "$\mathcal{D}_1(\widehat G_n, G_{*})$ (Exact)",
     "$\mathcal{D}_2(\widehat G_n, G_{*})$ (Exact)",
@@ -64,8 +65,10 @@ labels = [
     "$\mathcal{D}_1(\widehat G_n, G_{*})$ (Merge)",
     "$\mathcal{D}_2(\widehat G_n, G_{*})$ (Merge)"
 ]
-colors = ['red', 'blue', 'green', 'purple', 'orange']
-linestyles = ['--', '--', '--', '--', '--']
+colors = ['red', 'blue',
+          'green', 'purple', 'orange']
+linestyles = ['--', '--',
+              '--', '--', '--']
 
 
 # Function to plot individual graphs
@@ -88,12 +91,13 @@ def plot_individual(x, y, label, color, linestyle):
 
 
 # # Plot individual figures
-for i in range(1):
-    plot_individual(x, y_list[i], labels[i], colors[i], linestyles[i])
+# for i in range(1):
+#     plot_individual(x, y_list[i], labels[i], colors[i], linestyles[i])
 
 # Combined figure with regression lines and coefficients in the legend
 plt.figure(figsize=(8, 6))
-for i in range(5):
+i_plot = [ 2, 4]
+for i in i_plot:
     reg = LinearRegression().fit(x, y_list[i].reshape(-1, 1))
     coef = np.round(reg.coef_[0][0], 5)
     intercept = np.round(reg.intercept_[0], 1)
