@@ -61,9 +61,9 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
     over_voronoi_loss = []
     merge_voronoi_loss = []
     merge_d1_voronoi_loss = []
-    estimators = []
+    estimators = dict()
 
-    for i in range (n_iter+1):
+    for i in range (n_iter):
         # n_samples = n_min + i * iter
         # print(n_samples)
         log_n_samples = log_min + i*log_iter
@@ -144,7 +144,7 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
             log(voronoi_loss_D1(MixingMeasure(merge_ddg.dendrogram_tree[n_over_components-n_components]), MixingMeasure(true_components, true_voronoi_cells_0), 0, 0))
         ])
 
-        current_estimators = []
+        current_estimators = dict()
         current_estimators["n_samples"] = n_samples
         current_estimators["exact"] = exact_fitted_model.list_of_parameters()
         current_estimators["over"] = over_fitted_model.list_of_parameters()

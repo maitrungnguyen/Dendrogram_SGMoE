@@ -350,5 +350,4 @@ class ModelNMoE:
             "Regression Coefficients": self.param.beta.tolist(),
             "Variances": self.param.sigma2.tolist(),
             "Gating Coefficients": self.param.alpha.tolist(),
-            "Clustering": self.stat.klas.tolist(),
         }
