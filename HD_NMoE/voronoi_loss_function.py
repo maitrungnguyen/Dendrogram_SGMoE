@@ -45,17 +45,15 @@ def voronoi_loss_function(G:MixingMeasure, G_0:MixingMeasure, t_0, t_1):
             for j in G_0.voronoi_cells[i]:
                 temp_sum = 0
 
-                summ = 0
-                delta_t1_w1k = np.linalg.norm(G.components[j].w_1k - G_0.components[i].w_1k - t_1)**2
-                delta_b_k = np.linalg.norm(G.components[j].b_k - G_0.components[i].b_k)**2
-                summ += delta_t1_w1k + delta_b_k
-                temp_sum += summ**(len(G_0.voronoi_cells[i]))
+                delta_t1_w1k = np.linalg.norm(G.components[j].w_1k - G_0.components[i].w_1k - t_1)
+                delta_b_k = np.linalg.norm(G.components[j].b_k - G_0.components[i].b_k)
+                summ = np.linalg.norm([delta_t1_w1k, delta_b_k])
+                temp_sum += summ ** (2*len(G_0.voronoi_cells[i]))
 
-                summ2 = 0
-                delta_A_k = np.linalg.norm(G.components[j].A_k - G_0.components[i].A_k)**2
-                delta_sigma2 = np.linalg.norm(G.components[j].sigma2 - G_0.components[i].sigma2)**2
-                summ2 += delta_A_k + delta_sigma2
-                temp_sum += summ2**(len(G_0.voronoi_cells[i])/2)
+                delta_A_k = np.linalg.norm(G.components[j].A_k - G_0.components[i].A_k)
+                delta_sigma2 = np.linalg.norm(G.components[j].sigma2 - G_0.components[i].sigma2)
+                summ2 = np.linalg.norm([delta_A_k, delta_sigma2])
+                temp_sum += summ2**(len(G_0.voronoi_cells[i]))
 
                 temp_sum *= np.exp(G.components[j].w_0k)
 
@@ -68,7 +66,7 @@ def voronoi_loss_function(G:MixingMeasure, G_0:MixingMeasure, t_0, t_1):
                 delta_A_k = np.linalg.norm(G.components[j].A_k - G_0.components[i].A_k)**2
                 delta_sigma2 = np.linalg.norm(G.components[j].sigma2 - G_0.components[i].sigma2)**2
 
-                sum_exact_1 += (delta_t1_w1k + delta_b_k + delta_A_k + delta_sigma2)**(1/2)*np.exp(G.components[j].w_0k)
+                sum_exact_1 += (delta_t1_w1k + delta_b_k + delta_A_k + delta_sigma2)**(0.5)*np.exp(G.components[j].w_0k)
 
     sum_gating = 0
     for i in range(G_0.K):

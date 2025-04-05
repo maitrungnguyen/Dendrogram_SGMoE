@@ -334,3 +334,21 @@ class ModelNMoE:
         self.stat = temp_stat
         return
 
+    def list_of_parameters(self):
+        """
+        Return a list of all parameters in the model.
+        """
+        return {
+            "K": self.param.K,
+            "p": self.param.p,
+            "d": self.param.d,
+            "AIC": self.stat.AIC,
+            "BIC": self.stat.BIC,
+            "ICL": self.stat.ICL,
+            "loglik": self.stat.loglik,
+            "df": self.param.df,
+            "Regression Coefficients": self.param.beta.tolist(),
+            "Variances": self.param.sigma2.tolist(),
+            "Gating Coefficients": self.param.alpha.tolist(),
+            "Clustering": self.stat.klas.tolist(),
+        }

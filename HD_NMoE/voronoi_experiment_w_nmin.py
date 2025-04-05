@@ -61,8 +61,9 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
     over_voronoi_loss = []
     merge_voronoi_loss = []
     merge_d1_voronoi_loss = []
+    estimators = []
 
-    for i in range (n_iter):
+    for i in range (n_iter+1):
         # n_samples = n_min + i * iter
         # print(n_samples)
         log_n_samples = log_min + i*log_iter
@@ -142,7 +143,12 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
             log(n_samples),
             log(voronoi_loss_D1(MixingMeasure(merge_ddg.dendrogram_tree[n_over_components-n_components]), MixingMeasure(true_components, true_voronoi_cells_0), 0, 0))
         ])
-        print("Check:", len(merge_ddg.dendrogram_tree[n_over_components - n_components]))
+
+        current_estimators = []
+        current_estimators["n_samples"] = n_samples
+        current_estimators["exact"] = exact_fitted_model.list_of_parameters()
+        current_estimators["over"] = over_fitted_model.list_of_parameters()
+        current_estimators["merge"] = merge_fitted_model.list_of_parameters()
 
     exact_d1_voronoi_loss = np.array(exact_d1_voronoi_loss)
     merge_d1_voronoi_loss = np.array(merge_d1_voronoi_loss)
@@ -150,19 +156,21 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
     exact_voronoi_loss = np.array(exact_voronoi_loss)
     over_voronoi_loss = np.array(over_voronoi_loss)
     merge_voronoi_loss = np.array(merge_voronoi_loss)
-    name = "../data/" + name_exp + "/voronoi_loss_K3_" + str(n_min) + "_" + str(n_max) + "_" + str(n_iter) + "_" + str(n_tries) + ".json"
+    name = "../data/" + name_exp + "/voronoi_loss_K" + str(n_over_components)+"-" + str(n_components) + "_" + str(n_min) + "_" + str(n_max) + "_" + str(n_iter) + "_" + str(n_tries) + ".json"
     time_elapsed = time.time() - start
 
     # print("Time elapsed: ", time_elapsed)
     # print(argmin_dic)
     with open(name, "w") as file:
         json.dump({
+
             "exact_d1": exact_d1_voronoi_loss.tolist(),
             "exact_d2": exact_voronoi_loss.tolist(),
             "over": over_voronoi_loss.tolist(),
             "merge_d1": merge_d1_voronoi_loss.tolist(),
             "merge_d2": merge_voronoi_loss.tolist(),
             "argmin_dic": argmin_dic,
+            "estimators": current_estimators,
             "time_elapsed": time_elapsed
         }, file)
 
