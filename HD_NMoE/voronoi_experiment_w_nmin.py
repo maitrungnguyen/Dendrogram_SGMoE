@@ -62,6 +62,7 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
     merge_voronoi_loss = []
     merge_d1_voronoi_loss = []
     estimators = dict()
+    data_records = []
 
     for i in range (n_iter):
         # n_samples = n_min + i * iter
@@ -87,6 +88,14 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
             "X": X.tolist(),
             "y": data["y"].tolist(),
         }
+
+        # Save data to JSON file
+        data_record = {
+            "n_samples": n_samples,
+            "X": data["X"],
+            "y": data["y"],
+        }
+        data_records.append(data_record)
 
         x = np.array(data["X"])
         y = np.array(data["y"])
@@ -164,6 +173,7 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
     with open(name, "w") as file:
         json.dump({
 
+            "data_records": data_records,
             "exact_d1": exact_d1_voronoi_loss.tolist(),
             "exact_d2": exact_voronoi_loss.tolist(),
             "over": over_voronoi_loss.tolist(),
