@@ -34,6 +34,19 @@ class MixingMeasure:
         self.components = components
         self.voronoi_cells = voronoi_cells
 
+    def list_components(self):
+        list_components = {}
+        for i in range(self.K):
+            temp_dict = {}
+            temp_dict["w_0k"] = float(self.components[i].w_0k)
+            temp_dict["w_1k"] = float(self.components[i].w_1k)
+            temp_dict["A_k"] = float(self.components[i].A_k)
+            temp_dict["b_k"] = float(self.components[i].b_k)
+            temp_dict["sigma2"] = float(self.components[i].sigma2)
+            list_components[f"component {i+1}"] = temp_dict
+        return list_components
+
+
 
 def voronoi_loss_function(G:MixingMeasure, G_0:MixingMeasure, t_0, t_1):
     loss = 0

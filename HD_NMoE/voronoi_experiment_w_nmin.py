@@ -61,7 +61,9 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
     over_voronoi_loss = []
     merge_voronoi_loss = []
     merge_d1_voronoi_loss = []
-    estimators = dict()
+    estimators = []
+    data_records = []
+    mixing_measure_records = []
 
     for i in range (n_iter):
         # n_samples = n_min + i * iter
@@ -87,6 +89,14 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
             "X": X.tolist(),
             "y": data["y"].tolist(),
         }
+
+        # Save data to JSON file
+        data_record = {
+            "n_samples": n_samples,
+            "X": data["X"],
+            "y": data["y"],
+        }
+        data_records.append(data_record)
 
         x = np.array(data["X"])
         y = np.array(data["y"])
@@ -148,8 +158,20 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
         current_estimators["n_samples"] = n_samples
         current_estimators["exact"] = exact_fitted_model.list_of_parameters()
         current_estimators["over"] = over_fitted_model.list_of_parameters()
-        current_estimators["merge"] = merge_fitted_model.list_of_parameters()
+        estimators.append(current_estimators)
 
+        current_mixing_measure = dict()
+        current_mixing_measure["n_samples"] = n_samples
+        current_mixing_measure["exact"] = MixingMeasure(exact_ddg.dendrogram_tree[0]).list_components()
+        current_mixing_measure["over"] = MixingMeasure(over_ddg.dendrogram_tree[0]).list_components()
+        current_mixing_measure["merge"] = MixingMeasure(merge_ddg.dendrogram_tree[n_over_components-n_components]).list_components()
+        mixing_measure_records.append(current_mixing_measure)
+
+
+
+    #serialize the data
+    #make_json_serializable(mixing_measure_records)
+    #print(mixing_measure_records)
     exact_d1_voronoi_loss = np.array(exact_d1_voronoi_loss)
     merge_d1_voronoi_loss = np.array(merge_d1_voronoi_loss)
 
@@ -164,13 +186,15 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
     with open(name, "w") as file:
         json.dump({
 
+            "data_records": data_records,
             "exact_d1": exact_d1_voronoi_loss.tolist(),
             "exact_d2": exact_voronoi_loss.tolist(),
             "over": over_voronoi_loss.tolist(),
             "merge_d1": merge_d1_voronoi_loss.tolist(),
             "merge_d2": merge_voronoi_loss.tolist(),
             "argmin_dic": argmin_dic,
-            "estimators": current_estimators,
+            "estimators": estimators,
+            "mixing_measure": mixing_measure_records,
             "time_elapsed": time_elapsed
         }, file)
 
@@ -190,7 +214,19 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
 
 
 
-
+def make_json_serializable(obj):
+    if isinstance(obj, np.ndarray):
+        return obj.tolist()
+    elif isinstance(obj, (np.float32, np.float64)):
+        return float(obj)
+    elif isinstance(obj, (np.int32, np.int64)):
+        return int(obj)
+    elif isinstance(obj, dict):
+        return {k: make_json_serializable(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [make_json_serializable(v) for v in obj]
+    else:
+        return obj
 
 
 
