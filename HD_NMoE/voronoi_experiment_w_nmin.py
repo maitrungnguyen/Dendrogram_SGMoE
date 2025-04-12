@@ -29,18 +29,15 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
                       ]),
     sigmak = np.array([0.9, 0.5, 1.2]),
     n_tries = 1,
-    name_exp = "experiment 1", favourable = False
+    name_exp = "experiment 1", favourable = False,
+    exact_enable = True,
+    seed = 2025,
+    spacing_type = "log",
     ):
 
-    #np.random.seed(42)
-
     start = time.time()
-    argmin_dic = []
-    log_min = log(n_min)
-    log_max = log(n_max)
-    log_iter = (log_max - log_min)/float(n_iter)
-    iter = (n_max - n_min)//n_iter
-    print(log_min, log_max, log_iter)
+
+
     alphak = np.array(alphak)
     betak = np.array(betak)
     sigmak = np.array(sigmak)
@@ -56,6 +53,7 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
     component = ComponentNode(alpha, betak[:,-1], sigmak[-1])
     true_components.append(component)
 
+    argmin_dic = []
     exact_voronoi_loss = []
     exact_d1_voronoi_loss = []
     over_voronoi_loss = []
@@ -65,63 +63,53 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
     data_records = []
     mixing_measure_records = []
 
-    for i in range (n_iter):
-        # n_samples = n_min + i * iter
-        # print(n_samples)
-        log_n_samples = log_min + i*log_iter
-        n_samples = int(exp(log_n_samples))
-        print(n_samples)
 
-        X = np.random.normal(0, 1, (n_samples, n_features))
 
+    np.random.seed(seed)
+    if spacing_type == "linear":
+        n_values = np.linspace(n_min, n_max, num=n_iter)
+    elif spacing_type == "log":
+        n_values = np.logspace(np.log(n_min), np.log(n_max), num=n_iter, base=np.e)
+    else:
+        raise ValueError("Unsupported spacing type. Use 'linear' or 'log'.")
+    n_values = np.ceil(n_values).astype(int)
+    iter_no = 0
+
+    #Main loop
+    for n_samples in n_values:
+        print(f"Running iteration {iter_no+1}/{n_iter} with n_samples = {n_samples}")
+        iter_no += 1
+        n_samples = int(n_samples)
+
+        X = np.random.uniform(0, 1, (n_samples, n_features))
 
         # Sample data
         data = sample_univ_nmoe(alphak, betak, sigmak, X)
-
-        # n_samples = n_min + i * iter
-        # print(n_samples)
-        # X = np.random.normal(0, 1, size=(n_samples, n_features))
-        #
-        # # Sample data
-        # data = sample_univ_nmoe(alphak, betak, sigmak, X)
 
         data = {
             "X": X.tolist(),
             "y": data["y"].tolist(),
         }
 
-        # Save data to JSON file
-        data_record = {
-            "n_samples": n_samples,
-            "X": data["X"],
-            "y": data["y"],
-        }
-        data_records.append(data_record)
-
         x = np.array(data["X"])
         y = np.array(data["y"])
 
-        K = n_components
-        p = 1
-        q = 1
-        exact_fitted_model = emNMoE(X=x, Y=y, K=K, p=p, q=q, verbose=False, favourable = favourable, true_alpha = alphak, true_beta = betak, true_sigma2 = sigmak)
-        exact_ddg = Dendrogram(exact_fitted_model, x, y)
-        exact_ddg.create_dendrogram_tree()
-        #exact_fitted_model.summary()
-        true_voronoi_cells_0 = construct_voronoi_cells(true_components, exact_ddg, 0)
-        # exact_voronoi_loss.append({
-        #     "log_n_samples": log(n_samples),
-        #     "log_voronoi_loss": log(voronoi_loss_function(MixingMeasure(exact_ddg.dendrogram_tree[0]), MixingMeasure(true_components, true_voronoi_cells_0), 0, 0))
-        # })
-        exact_voronoi_loss.append([
-            log(n_samples),
-            log(voronoi_loss_function(MixingMeasure(exact_ddg.dendrogram_tree[0]), MixingMeasure(true_components, true_voronoi_cells_0), 0, 0))
-        ])
-        exact_d1_voronoi_loss.append([
-            log(n_samples),
-            log(voronoi_loss_D1(MixingMeasure(exact_ddg.dendrogram_tree[0]), MixingMeasure(true_components, true_voronoi_cells_0), 0, 0))
-        ])
-
+        if exact_enable:
+            K = n_components
+            p = 1
+            q = 1
+            exact_fitted_model = emNMoE(X=x, Y=y, K=K, p=p, q=q, verbose=False, favourable = favourable, true_alpha = alphak, true_beta = betak, true_sigma2 = sigmak)
+            exact_ddg = Dendrogram(exact_fitted_model, x, y)
+            exact_ddg.create_dendrogram_tree()
+            true_voronoi_cells_0 = construct_voronoi_cells(true_components, exact_ddg, 0)
+            exact_voronoi_loss.append([
+                log(n_samples),
+                log(voronoi_loss_function(MixingMeasure(exact_ddg.dendrogram_tree[0]), MixingMeasure(true_components, true_voronoi_cells_0), 0, 0))
+            ])
+            exact_d1_voronoi_loss.append([
+                log(n_samples),
+                log(voronoi_loss_D1(MixingMeasure(exact_ddg.dendrogram_tree[0]), MixingMeasure(true_components, true_voronoi_cells_0), 0, 0))
+            ])
 
         K = n_over_components
         p = 1
@@ -136,13 +124,9 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
             log(voronoi_loss_function(MixingMeasure(over_ddg.dendrogram_tree[0]), MixingMeasure(true_components, true_voronoi_cells_0), 0, 0))
         ])
 
-        # K = n_over_components
-        # p = 1
-        # q = 1
-        # merge_fitted_model = emNMoE(X=x, Y=y, K=K, p=p, q=q, verbose=False)
         merge_ddg = Dendrogram(merge_fitted_model, x, y)
         merge_ddg.create_dendrogram_tree()
-        print(n_over_components - merge_ddg.argmin_dic())
+        print("Infered true K_0 from DIC:",n_over_components - merge_ddg.argmin_dic())
         argmin_dic.append([n_samples, n_over_components - merge_ddg.argmin_dic()])
         true_voronoi_cells_0 = construct_voronoi_cells(true_components, merge_ddg, n_over_components-n_components)
         merge_voronoi_loss.append([
@@ -168,25 +152,19 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
         mixing_measure_records.append(current_mixing_measure)
 
 
-
-    #serialize the data
-    #make_json_serializable(mixing_measure_records)
-    #print(mixing_measure_records)
     exact_d1_voronoi_loss = np.array(exact_d1_voronoi_loss)
     merge_d1_voronoi_loss = np.array(merge_d1_voronoi_loss)
-
     exact_voronoi_loss = np.array(exact_voronoi_loss)
     over_voronoi_loss = np.array(over_voronoi_loss)
     merge_voronoi_loss = np.array(merge_voronoi_loss)
     name = "../data/" + name_exp + "/voronoi_loss_K" + str(n_over_components)+"-" + str(n_components) + "_" + str(n_min) + "_" + str(n_max) + "_" + str(n_iter) + "_" + str(n_tries) + ".json"
     time_elapsed = time.time() - start
 
-    # print("Time elapsed: ", time_elapsed)
-    # print(argmin_dic)
+
     with open(name, "w") as file:
         json.dump({
-
-            "data_records": data_records,
+            "random_seed": seed,
+            "spacing_type": spacing_type,
             "exact_d1": exact_d1_voronoi_loss.tolist(),
             "exact_d2": exact_voronoi_loss.tolist(),
             "over": over_voronoi_loss.tolist(),
@@ -197,22 +175,6 @@ def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
             "mixing_measure": mixing_measure_records,
             "time_elapsed": time_elapsed
         }, file)
-
-    # print("Exp Done")
-
-    # plt.plot(exact_voronoi_loss[:, 0], exact_voronoi_loss[:, 1], label="Exact")
-    # plt.plot(over_voronoi_loss[:, 0], over_voronoi_loss[:, 1], label="Over")
-    # plt.plot(merge_voronoi_loss[:, 0], merge_voronoi_loss[:, 1], label="Merge")
-    # plt.xlabel("Log number of samples")
-    # plt.ylabel("Log Voronoi loss")
-    # plt.legend()
-    # plt.show()
-
-    #plt.savefig("../figures/voronoi_loss_2.png")
-
-
-
-
 
 def make_json_serializable(obj):
     if isinstance(obj, np.ndarray):

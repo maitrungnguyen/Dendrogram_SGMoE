@@ -7,19 +7,22 @@ with open("experiment 5/description.json", "r") as file:
     data = json.load(file)
 
 while True:
-    try:
-        print("Check")
+    # try:
+        print("Trial:",data["n_tries"])
         voronoi_experiment_w_nmin(data["n_min"], data["n_max"], data["n_iter"], data["n_features"], data["K"], data["K_max"],data["alphak"],
                                   data["betak"], data["sigmak"],
                                   data["n_tries"],
-                                    data["name"], favourable=data["favourable"]
+                                    data["name"], favourable=data["favourable"],
+                                    seed=data["seed"],
+                                  exact_enable= True,
+                                    spacing_type=data["spacing_type"],
                                   )
 
         print("Done")
         data["n_tries"] += 1
+        data["seed"] += 1
         with open("experiment 5/description.json", "w") as file:
             json.dump(data, file)
-        print(data["n_tries"])
-    except:
-        continue
+    # except:
+    #     continue
 
