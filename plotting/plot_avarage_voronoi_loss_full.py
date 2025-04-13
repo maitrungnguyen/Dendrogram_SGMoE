@@ -3,13 +3,29 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.linear_model import RANSACRegressor, LinearRegression, HuberRegressor, TheilSenRegressor
 
+i_plot = [2, 4]
+# The i_plot list indicates which type of loss to plot:
+# 0: Exact loss (D1)
+# 1: Exact loss (D2)
+# 2: Over loss (D2)
+# 3: Merge loss (D1)
+# 4: Merge loss (D2)
+
 # Parameters for selecting the range of data points
 n_begin = 0 # Start index (0-based)
 n_end = 200 # End index (exclusive)
-i_plot = [2, 4]
 
-error_bar = 0
-dual = 0
+error_bar = 0 # Set to 1 to include error bars in the plot
+dual = 0 # Set to 1 to include dual data, which means that you have two sets of data to plot
+normal_regressor = 0 # Set to 1 if you want to use a normal linear regressor along with RANSAC
+
+# The range of trials to be plotted
+trials_1 = range(1, 2)
+trials_2 = range(1000, 1014)
+
+
+experiment_name = "experiment 5"
+setting = "voronoi_loss_K4-2_100_100000_200"
 
 sample_list = []
 exact_data = []
@@ -19,9 +35,9 @@ merge_data = []
 merge_data_d2 = []
 
 # Load data
-for i in range(1, 2):
+for i in trials_1:
     print(i)
-    with open(f"../data/experiment 5/voronoi_loss_K4-2_100_100000_200_{i}.json", "r") as file:
+    with open(f"../data/{experiment_name}/{setting}_{i}.json", "r") as file:
         temp = json.load(file)
 
     temp_exact = np.array(temp["exact_d1"])
@@ -42,9 +58,9 @@ for i in range(1, 2):
     sample_list = temp_merge[:, 0]
 
 if dual:
-    for i in range(1000, 1014):
+    for i in trials_2:
         print(i)
-        with open(f"../data/experiment 5/voronoi_loss_K3_100_100000_80_{i}.json", "r") as file:
+        with open(f"../data/{experiment_name}/{setting}_{i}.json", "r") as file:
             temp = json.load(file)
 
         temp_exact = np.array(temp["exact_d1"])
@@ -69,6 +85,7 @@ print(len(merge_data_d2[0]))
 #print the begin and end of the data
 print("Minimum sample size:", np.exp(sample_list[n_begin]))
 print("Maximum sample size:", np.exp(sample_list[n_end-1]))
+
 # Convert to numpy arrays and trim based on the selected range
 exact_data = np.array(exact_data)[:, n_begin:n_end]
 exact_data_d2 = np.array(exact_data_d2)[:, n_begin:n_end]
@@ -92,14 +109,6 @@ std_merge = np.std(merge_data, axis=0)
 std_merge_d2 = np.std(merge_data_d2, axis=0)
 
 std_list = [std_exact, std_exact_d2, std_over, std_merge, std_merge_d2]
-
-
-
-# print("Outlier:", np.argmax(average_over))
-#
-# # Remove outlier
-# average_over = np.delete(average_over, np.argmax(average_over))
-# average_merge = np.delete(average_merge, np.argmax(average_merge))
 
 
 # Perform linear regression for all cases
@@ -139,24 +148,25 @@ def plot_individual(x, y, label, color, linestyle):
 
 def plot_individual_error_bar(x, y, std, label, color, linestyle):
     base_reg = LinearRegression()
-    reg = RANSACRegressor(estimator=base_reg, min_samples=0.5,
-                          residual_threshold=5.0, random_state=0)
-    reg.fit(x, y.reshape(-1, 1))
+    reg = RANSACRegressor(estimator=base_reg, min_samples=0.5, residual_threshold=5.0, random_state=0)
+    reg.fit(x, y_list[i].reshape(-1, 1))
 
-    coef = reg.estimator_.coef_[0][0]
-    intercept = reg.estimator_.intercept_[0]
+    coef = np.round(reg.estimator_.coef_[0][0], 5)
+    intercept = np.round(reg.estimator_.intercept_[0], 1)
 
     plt.figure(figsize=(6, 4))
 
-    # Plot mean with vertical error bars (no markers)
-    plt.errorbar(
-        sample_list, y, yerr=std,
-        fmt='-',
-        color=color, linestyle=linestyle, linewidth=0.5,
-        capsize=0, label=label
-    )
+    if error_bar:
+        plt.errorbar(
+            sample_list, y, yerr=std,
+            fmt='-',
+            color=color, linestyle=linestyle, linewidth=0.5,
+            capsize=0, label=label
+        )
+    else:
+        plt.plot(sample_list, y_list[i], color=colors[i], linestyle=linestyles[i],
+                 label=f"{labels[i]}: {intercept}$n^{{{coef}}}$")
 
-    # Plot RANSAC regression line
     plt.plot(x, reg.predict(x), color='black', linestyle='--',
              linewidth=1.5, label=f"{np.round(intercept, 1)}$n^{{{np.round(coef, 5)}}}$")
 
@@ -168,13 +178,9 @@ def plot_individual_error_bar(x, y, std, label, color, linestyle):
     plt.show()
 
 
-# # Plot individual figures
-for i in i_plot:
-    plot_individual(x, y_list[i], labels[i], colors[i], linestyles[i])
 
-# Plot individual figures with error bars, RANSAC regression
-# for i in i_plot:
-#     plot_individual_error_bar(x, y_list[i], std_list[i], labels[i], colors[i], linestyles[i])
+for i in i_plot:
+    plot_individual_error_bar(x, y_list[i], std_list[i], labels[i], colors[i], linestyles[i])
 
 
 
@@ -206,7 +212,7 @@ for i in i_plot:
 
 plt.xlabel("log(sample size)", fontsize=14)
 plt.ylabel("log(loss)", fontsize=14)
-plt.title(f"Comparison of Different Settings\n(Data Points: {n_begin} to {n_end})", fontsize=16)
+plt.title(f"Comparison of Different Settings (RANSAC)\n(Data Points: {n_begin} to {n_end})", fontsize=16)
 plt.legend(fontsize=10)
 plt.grid(True, linestyle="--", alpha=0.6)
 plt.show()
@@ -252,23 +258,21 @@ plt.show()
 # plt.legend(fontsize=10)
 # plt.grid(True, linestyle="--", alpha=0.6)
 # plt.show()
-#
-#
-#
-#
-#Normal regressor
-for i in i_plot:
-    reg = LinearRegression().fit(x, y_list[i].reshape(-1, 1))
-    coef = np.round(reg.coef_[0][0], 5)
-    intercept = np.round(reg.intercept_[0], 1)
 
-    plt.plot(sample_list, y_list[i], color=colors[i], linestyle=linestyles[i],
-             label=f"{labels[i]}: {intercept}$n^{{{coef}}}$")
-    plt.plot(x, reg.predict(x), color=colors[i], linestyle='dotted')
+    #Normal regressor
+if normal_regressor:
+    for i in i_plot:
+        reg = LinearRegression().fit(x, y_list[i].reshape(-1, 1))
+        coef = np.round(reg.coef_[0][0], 5)
+        intercept = np.round(reg.intercept_[0], 1)
 
-plt.xlabel("log(sample size)", fontsize=14)
-plt.ylabel("log(loss)", fontsize=14)
-plt.title(f"Comparison of Different Settings\n(Data Points: {n_begin} to {n_end})", fontsize=16)
-plt.legend(fontsize=10)
-plt.grid(True, linestyle="--", alpha=0.6)
-plt.show()
+        plt.plot(sample_list, y_list[i], color=colors[i], linestyle=linestyles[i],
+                 label=f"{labels[i]}: {intercept}$n^{{{coef}}}$")
+        plt.plot(x, reg.predict(x), color=colors[i], linestyle='dotted')
+
+    plt.xlabel("log(sample size)", fontsize=14)
+    plt.ylabel("log(loss)", fontsize=14)
+    plt.title(f"Normal linear regression\n(Data Points: {n_begin} to {n_end})", fontsize=16)
+    plt.legend(fontsize=10)
+    plt.grid(True, linestyle="--", alpha=0.6)
+    plt.show()
