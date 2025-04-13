@@ -25,12 +25,15 @@ class ComponentNode:
 
     @staticmethod
     def distance_of_components(component1, component2):
+        #print(component1.w_0k, component2.w_0k)
         w_0k_diff = 1/(np.exp(-component1.w_0k) + np.exp(-component2.w_0k))
+        #print(component1.w_1k, component2.w_1k)
         w_1k_diff = np.linalg.norm(component1.w_1k - component2.w_1k)**2
         A_k_diff = np.linalg.norm(component1.A_k - component2.A_k)**2
         b_k_diff = (component1.b_k - component2.b_k)**2
         sigma2_diff = (component1.sigma2 - component2.sigma2)**2
         sum = (A_k_diff+sigma2_diff)**(1/2)
+        #print("Check")
         return w_0k_diff*(b_k_diff + sum)
 
     @staticmethod
