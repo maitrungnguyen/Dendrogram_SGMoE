@@ -7,12 +7,16 @@ directory = "../data/experiment 5"
 setting = "voronoi_loss_K4-2_100_100000_80"
 true_argmin_dic = 2 # True K_0
 
-dual = 0 # Change this if you have 2 data sets
+# Change this if you have 2 ranges of data:
+# 0: only first range
+# 1: only second range
+# 2: both ranges
+dual = 2
 if dual == 0:
     indices = range(1000, 1024)
-elif dual == 2:
-    indices = range(1100, 1111)
 elif dual == 1:
+    indices = range(1100, 1111)
+elif dual == 2:
     indices = list(range(1000, 1024)) + list(range(1100, 1111))
 else:
     raise ValueError("Invalid value for 'dual'. Use 0, 1, or 2.")
