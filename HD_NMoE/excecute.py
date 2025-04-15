@@ -2,8 +2,9 @@ from voronoi_experiment_w_nmin import voronoi_experiment_w_nmin
 import json
 import numpy as np
 
+running_experiment = "experiment 5"
 
-with open("experiment 5/description.json", "r") as file:
+with open(f"{running_experiment}/description.json", "r") as file:
     data = json.load(file)
 
 while True:
@@ -21,11 +22,11 @@ while True:
         print("Done")
         data["n_tries"] += 1
         data["seed"] += 7
-        with open("experiment 5/description.json", "w") as file:
+        with open(f"{running_experiment}/description.json", "w") as file:
             json.dump(data, file)
     except:
         data["seed"] += 7
-        with open("experiment 5/description.json", "w") as file:
+        with open(f"{running_experiment}/description.json", "w") as file:
             json.dump(data, file)
         continue
 

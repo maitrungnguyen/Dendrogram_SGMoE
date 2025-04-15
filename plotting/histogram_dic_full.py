@@ -3,16 +3,29 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Path to data folder
-directory = "../data/experiment 5/"
+directory = "../data/experiment 5"
+setting = "voronoi_loss_K4-2_100_100000_80"
+true_argmin_dic = 2 # True K_0
 
-true_argmin_dic = 2  # Change this to the correct value
+# Change this if you have 2 ranges of data:
+# 0: only first range
+# 1: only second range
+# 2: both ranges
+dual = 2
+if dual == 0:
+    indices = range(1000, 1024)
+elif dual == 1:
+    indices = range(1100, 1111)
+elif dual == 2:
+    indices = list(range(1000, 1024)) + list(range(1100, 1111))
+else:
+    raise ValueError("Invalid value for 'dual'. Use 0, 1, or 2.")
 
-n_counts = {}  # Total occurrences of each n
-correct_counts = {}  # Count of correct argmin_dic matches
 
-for i in range(1000, 1014):
-    file_path = f"{directory}voronoi_loss_K3_100_100000_80_{i}.json"
-
+n_counts = {}
+correct_counts = {}
+for i in indices:
+    file_path = f"{directory}/{setting}_{i}.json"
     try:
         with open(file_path, "r") as file:
             temp = json.load(file)
