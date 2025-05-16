@@ -22,7 +22,6 @@ class ParamNMoE:
         self.Y = Y
         self.n = len(Y)
         self.d = X.shape[1] if X.ndim > 1 else 1
-
         self.K = K
         self.p = p
         self.q = q
@@ -118,23 +117,20 @@ class ParamNMoE:
 
             available_K = betak.shape[1]
 
-            # Allocate space for parameters
             beta_start = np.empty((betak.shape[0], self.K))
             sigma2_start = np.empty(self.K)
-            alpha_start = np.empty((alphak.shape[0], self.K - 1))  # Reduce to (K-1)
+            alpha_start = np.empty((alphak.shape[0], self.K - 1))
 
-            s_inds = np.arange(available_K - 1)  # Exclude last index initially
-            if self.K > available_K:
+            if self.K <= available_K:
+                s_inds = np.random.choice(available_K, size=self.K, replace=False)
+            else:
+                base_inds = np.arange(available_K-1)
                 extra_inds = np.random.choice(available_K, size=self.K - available_K, replace=True)
-                s_inds = np.concatenate([s_inds, extra_inds])
-
-            np.random.shuffle(s_inds)  # Shuffle the assigned indices
-
-            # Append the last true component index for the last expert
-            s_inds = np.append(s_inds, available_K - 1)
+                s_inds = np.concatenate([base_inds, extra_inds])
+                np.random.shuffle(s_inds)
+                s_inds = np.append(s_inds, available_K - 1)
 
             print(s_inds)
-            # Small perturbations for initialization
             for k in range(self.K):
                 beta_start[:, k] = betak[:, s_inds[k]] + np.random.normal(0, 0.005 * self.n ** (-0.083),
                                                                           size=betak.shape[0])
@@ -146,12 +142,12 @@ class ParamNMoE:
             # Assign to model parameters
             self.beta = beta_start
             self.sigma2 = sigma2_start
-            self.alpha = alpha_start  # Reduce alpha to (K-1)
+            self.alpha = alpha_start
 
             # Initialize gating network using IRLS
             Z = np.zeros((self.n, self.K))
-            klas = np.random.choice(self.K, self.n)  # Assign clusters (randomly for now)
-            Z[np.arange(self.n), klas] = 1  # Hard assignment
+            klas = np.random.choice(self.K, self.n)
+            Z[np.arange(self.n), klas] = 1
 
             tau = Z
             res = IRLS(self.phiAlpha, tau, np.ones((self.n, 1)), self.alpha)
@@ -177,12 +173,13 @@ class ParamNMoE:
 
         # Update regression parameters for each expert
         for k in range(self.K):
-            # Weighted design matrix and response
             weights = np.sqrt(statNMoE.tik[:, k])
             Xbeta = self.phiBeta * weights[:, np.newaxis]
             yk = self.Y * weights
 
-            self.beta[:, k] = np.linalg.pinv(Xbeta.T @ Xbeta) @ (Xbeta.T @ yk)
+            XTX = Xbeta.T @ Xbeta
+            XTX += np.eye(XTX.shape[0]) * 1e-6  # Ridge regularization
+            self.beta[:, k] = np.linalg.pinv(XTX) @ (Xbeta.T @ yk)
 
             # Update variance
             residuals = self.Y - self.phiBeta @ self.beta[:, k]

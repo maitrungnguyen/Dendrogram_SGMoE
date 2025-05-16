@@ -237,7 +237,7 @@ class Dendrogram:
         Returns:
         - dic_value: float, the DIC value for the given level.
         """
-        current_gating_cofficients = None
+        current_gating_coefficients = None
         current_regression_coefficients = None
         current_sigma2 = None
 
@@ -245,7 +245,7 @@ class Dendrogram:
             component_alpha = np.concatenate(([component.w_0k], component.w_1k))
             component_beta = np.concatenate(([component.b_k], component.A_k))
             component_sigma2 = component.sigma2
-            current_gating_cofficients = np.column_stack((current_gating_cofficients, component_alpha)) if current_gating_cofficients is not None else component_alpha.reshape(-1, 1)
+            current_gating_coefficients = np.column_stack((current_gating_coefficients, component_alpha)) if current_gating_coefficients is not None else component_alpha.reshape(-1, 1)
             current_regression_coefficients = np.column_stack((current_regression_coefficients, component_beta)) if current_regression_coefficients is not None else component_beta.reshape(-1, 1)
             current_sigma2 = np.append(current_sigma2, component_sigma2) if current_sigma2 is not None else np.array([component_sigma2])
 
@@ -274,11 +274,22 @@ class Dendrogram:
         # current_statNMoE.compute_AIC_BIC_loglik(current_paramNMoE)
         # aic_value = current_statNMoE.AIC
         # bic_value = current_statNMoE.BIC
-        log_likelihood = self.compute_log_likelihood(self.X, self.Y, current_gating_cofficients, current_regression_coefficients, current_sigma2)
-        aic_value = -2 * log_likelihood + 2 * (current_gating_cofficients.shape[0] + current_regression_coefficients.shape[0] + current_sigma2.shape[0])
-        bic_value = -2 * log_likelihood + (current_gating_cofficients.shape[0] + current_regression_coefficients.shape[0] + current_sigma2.shape[0]) * np.log(self.X.shape[0])
+        log_likelihood = self.compute_log_likelihood(self.X, self.Y, current_gating_coefficients, current_regression_coefficients, current_sigma2)
+
+        k = (
+                current_gating_coefficients.size  # M * d
+                + current_regression_coefficients.size  # M * d
+                + current_sigma2.size  # M
+        )
+
+        n = self.X.shape[0]  # number of data points
+
+        aic_value = -2 * log_likelihood + 2 * k
+        bic_value = -2 * log_likelihood + k * np.log(n)
+
         d_n_k = self.distance_list[level]
         # print("Distance:",d_n_k)
+
         # print("Log Likelihood:", log_likelihood)
         #print("DL:", self.distance_list)
         # print("D_n_k:", d_n_k)

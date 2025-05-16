@@ -41,7 +41,7 @@ class StatNMoE:
 
     def computeStats(self, paramNMoE):
         """
-        Compute various statistics for the EM algorithm based on the parameters in ParamNMoE.
+        Compute BIC, AIC, ICL for the EM algorithm based on the parameters in ParamNMoE.
         """
         n, K = self.n, self.K
 

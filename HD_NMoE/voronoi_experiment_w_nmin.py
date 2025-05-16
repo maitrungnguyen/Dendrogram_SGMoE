@@ -14,6 +14,8 @@ from dendogram import Dendrogram, ComponentNode
 from sampleUniv import sample_univ_nmoe
 from voronoi_loss_function import construct_voronoi_cells, voronoi_loss_function, voronoi_loss_D1, MixingMeasure
 import time
+import os
+
 
 def voronoi_experiment_w_nmin(n_min, n_max, n_iter,
                               n_features=2,
@@ -190,7 +192,152 @@ def make_json_serializable(obj):
     else:
         return obj
 
+def dsc_aic_bic_icl_test(n_min, n_max, n_iter,
+                              n_features=2,
+    n_components = 3,
+    n_over_components = 5,
+            alphak = np.array([[0.3, 0.5],
+                       [1, 1],
+                       [-1, 0.5]
+                       ]),
+    betak = np.array([[0.5, 0.5, 0.5],
+                      [1.5, 0.6, 1.1],
+                      [0.9, 0.5, -0.3]
+                      ]),
+    sigmak = np.array([0.9, 0.5, 1.2]),
+    n_tries = 1,
+    name_exp = "experiment 1", favourable = False,
+    exact_enable = True,
+    seed = 2025,
+    spacing_type = "log",
+    ):
 
+    start = time.time()
+
+
+    alphak = np.array(alphak)
+    betak = np.array(betak)
+    sigmak = np.array(sigmak)
+
+
+    true_components = []
+
+    for i in range(alphak.shape[1]):
+        component = ComponentNode(alphak[:,i], betak[:,i], sigmak[i])
+        true_components.append(component)
+
+    alpha = np.zeros(betak.shape[0])
+    component = ComponentNode(alpha, betak[:,-1], sigmak[-1])
+    true_components.append(component)
+
+    argmin_dic = []
+    argmin_aic = []
+    argmin_bic = []
+    argmin_icl = []
+
+
+    mixing_measure_records = []
+
+
+
+    np.random.seed(seed)
+    if spacing_type == "linear":
+        n_values = np.linspace(n_min, n_max, num=n_iter)
+    elif spacing_type == "log":
+        n_values = np.logspace(np.log(n_min), np.log(n_max), num=n_iter, base=np.e)
+    else:
+        raise ValueError("Unsupported spacing type. Use 'linear' or 'log'.")
+    n_values = np.ceil(n_values).astype(int)
+    iter_no = 0
+
+    #Main loop
+    for n_samples in n_values:
+        print(f"Running iteration {iter_no+1}/{n_iter} with n_samples = {n_samples}")
+        iter_no += 1
+        n_samples = int(n_samples)
+
+        X = np.random.uniform(0, 1, (n_samples, n_features))
+
+        # Sample data
+        data = sample_univ_nmoe(alphak, betak, sigmak, X)
+
+        data = {
+            "X": X.tolist(),
+            "y": data["y"].tolist(),
+        }
+
+        x = np.array(data["X"])
+        y = np.array(data["y"])
+
+        aic = []
+        bic = []
+        icl = []
+
+        K = n_over_components
+        p = 1
+        q = 1
+        over_fitted_model = emNMoE(X=x, Y=y, K=K, p=p, q=q, verbose=False, favourable = favourable, true_alpha = alphak, true_beta = betak, true_sigma2 = sigmak)
+        merge_fitted_model = over_fitted_model
+        over_ddg = Dendrogram(over_fitted_model, x, y)
+        over_ddg.create_dendrogram_tree()
+
+        aic_bic_icl = over_fitted_model.aic_bic_icl()
+        aic.append(aic_bic_icl["AIC"])
+        bic.append(aic_bic_icl["BIC"])
+        icl.append(aic_bic_icl["ICL"])
+
+        merge_ddg = Dendrogram(merge_fitted_model, x, y)
+        merge_ddg.create_dendrogram_tree()
+        print("Infered true K_0 from DIC:",n_over_components - merge_ddg.argmin_dic())
+        argmin_dic.append([n_samples, n_over_components - merge_ddg.argmin_dic()])
+
+        for i in range(1, n_over_components):
+            K = n_over_components - i
+            p = 1
+            q = 1
+            fitted_model = emNMoE(X=x, Y=y, K=K, p=p, q=q, verbose=False, favourable = favourable, true_alpha = alphak, true_beta = betak, true_sigma2 = sigmak)
+            aic_bic_icl = fitted_model.aic_bic_icl()
+            aic.append(aic_bic_icl["AIC"])
+            bic.append(aic_bic_icl["BIC"])
+            icl.append(aic_bic_icl["ICL"])
+
+        # Find the number of K of the minimum AIC, BIC, and ICL
+        min_aic_index = n_over_components -  np.argmin(aic)
+        min_bic_index = n_over_components - np.argmin(bic)
+        min_icl_index = n_over_components - np.argmin(icl)
+
+        print("Infered true K_0 from AIC:", min_aic_index)
+        print("Infered true K_0 from BIC:", min_bic_index)
+        print("Infered true K_0 from ICL:", min_icl_index)
+        argmin_aic.append([n_samples, min_aic_index])
+        argmin_bic.append([n_samples, min_bic_index])
+        argmin_icl.append([n_samples, min_icl_index])
+
+
+    description = "dsc_aic_bic_icl_K" + str(n_over_components) + "_" + str(n_min) + "_" + str(n_max) + "_" + str(n_iter)
+    name = "../data/" + name_exp + "/" + description + "/" + description + "_" + str(n_tries) + ".json"
+    time_elapsed = time.time() - start
+
+    os.makedirs(os.path.dirname(name), exist_ok=True)
+    argmin_aic = np.array(argmin_aic)
+    argmin_bic = np.array(argmin_bic)
+    argmin_icl = np.array(argmin_icl)
+    argmin_dic = np.array(argmin_dic)
+    argmin_aic = argmin_aic.tolist()
+    argmin_bic = argmin_bic.tolist()
+    argmin_icl = argmin_icl.tolist()
+    argmin_dic = argmin_dic.tolist()
+
+    with open(name, "w") as file:
+        json.dump({
+            "random_seed": seed,
+            "spacing_type": spacing_type,
+            "argmin_dic": argmin_dic,
+            "argmin_aic": argmin_aic,
+            "argmin_bic": argmin_bic,
+            "argmin_icl": argmin_icl,
+            "time_elapsed": time_elapsed
+        }, file)
 
 
 
