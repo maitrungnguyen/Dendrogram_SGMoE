@@ -351,3 +351,15 @@ class ModelNMoE:
             "Variances": self.param.sigma2.tolist(),
             "Gating Coefficients": self.param.alpha.tolist(),
         }
+
+    def aic_bic_icl(self):
+        """
+        Return the AIC, BIC, and ICL values for the model.
+        """
+        self.stat.computeStats(self.param)
+
+        return {
+            "AIC": self.stat.AIC,
+            "BIC": self.stat.BIC,
+            "ICL": self.stat.ICL,
+        }

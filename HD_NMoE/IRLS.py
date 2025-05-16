@@ -94,7 +94,10 @@ def IRLS(X, Tau, Gamma, Winit, verbose=False, max_iter=300, lambda_reg=1e-9):
             piik = result["piik"]
 
         # Convergence criteria
-        rel_change = np.abs((loglik - loglik_old) / loglik_old)
+        if loglik_old == 0:
+            rel_change = np.inf
+        else:
+            rel_change = np.abs((loglik - loglik_old) / loglik_old)
         abs_change = np.abs(loglik - loglik_old)
         converge = rel_change <= 1e-7 or abs_change <= 1e-6
 
